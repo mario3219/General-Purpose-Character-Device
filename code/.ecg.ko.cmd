@@ -1,1 +1,0 @@
-savedcmd_ecg.ko := /home/jonathan/git-repos/Linux-virtual-kernel-driver/buildroot/output/host/bin/aarch64-buildroot-linux-gnu-ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T /home/jonathan/git-repos/Linux-virtual-kernel-driver/buildroot/output/build/linux-6.18.7/scripts/module.lds -o ecg.ko ecg.o ecg.mod.o .module-common.o
