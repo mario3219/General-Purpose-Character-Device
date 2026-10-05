@@ -23,11 +23,6 @@ void stream_remove(struct platform_device *pdev)
   // Just prints the device info along with a logging print
 	dev_info(&pdev->dev, "removing driver\n");
 
-  // Reassign the running boolean to false. This stops all running timer callbacks from occuring.
-	WRITE_ONCE(sdev->running, false);
-
-	timer_shutdown_sync(&sdev->timer);
-
 	device_destroy(sdev->class, sdev->devno);
 	class_destroy(sdev->class);
 	cdev_del(&sdev->cdev);

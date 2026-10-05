@@ -32,10 +32,7 @@ struct stream_device {
 
 	wait_queue_head_t read_queue;
 
-	struct timer_list timer;
-
 	u32 sample_counter;
-	bool running;
 };
 
 struct stream_file {
@@ -46,14 +43,14 @@ struct stream_file {
 extern const struct file_operations stream_fops;
 
 int stream_probe(struct platform_device *pdev);
-void stream_remove(struct platform_device *pdev);
-
-void stream_timer_callback(struct timer_list *timer);
 
 int stream_open(struct inode *inode, struct file *file);
-int stream_release(struct inode *inode, struct file *file);
-ssize_t stream_read(struct file *file, char __user *buf, size_t count, loff_t *offset);
-
 __poll_t stream_poll(struct file *file, struct poll_table_struct *wait);
+ssize_t stream_read(struct file *file, char __user *buf, size_t count, loff_t *offset);
+ssize_t stream_write(struct file *file, const char __user *buf, size_t count, loff_t *offset);
+
+void stream_remove(struct platform_device *pdev);
+int stream_release(struct inode *inode, struct file *file);
+
 
 #endif

@@ -31,6 +31,7 @@ const struct file_operations stream_fops = {
 	.open    = stream_open,
 	.release = stream_release,
 	.read    = stream_read,
+  .write   = stream_write,
 	.poll    = stream_poll,
 };
 

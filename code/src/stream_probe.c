@@ -85,18 +85,6 @@ int stream_probe(struct platform_device *pdev) {
   // Previously, we associated our internal sdev with pdev->dev. Now we do the opposite way, so that pdev->sdev.
 	platform_set_drvdata(pdev, sdev);
 
-  // This is for simulation purposes only. We simulate hardware in this project. We setup the timer variable in the streamer_device struct. The function initializes the timer, and tells the kernel which function to call when the timer expires.
-  // Note that the timer is only prepared, it doesn't start running
-	timer_setup(&sdev->timer, stream_timer_callback, 0);
-
-  // Sample counter. Everytime stream_timer_callback gets called, the counter will increase.
-	sdev->sample_counter = 0;
-  // Boolean to track if the timer should reset after expiring.
-	sdev->running = true;
-
-  // This schedules the timer AND starts it.
-	mod_timer(&sdev->timer, jiffies + msecs_to_jiffies(100));
-
 	dev_info(&pdev->dev, "created /dev/streamdev0 major=%d minor=%d\n", MAJOR(sdev->devno), MINOR(sdev->devno));
 
   // Will get skipped if goto gets called
