@@ -1,13 +1,16 @@
 ifneq ($(KERNELRELEASE),)
 
 # ===========================================================================
-# Kernel build
+# Kernel modules
 # ===========================================================================
 
-obj-m += stream_driver.o
 obj-m += stream_device.o
+obj-m += stream_driver.o
 
-# stream_driver.ko is composed of these source files.
+# stream_driver.ko consists of multiple source files.
+#
+# stream_driver.c must be compiled under another object name because
+# stream_driver.o is the final combined module object.
 stream_driver-y := \
 	stream_driver_main.o \
 	src/stream_probe.o \
@@ -16,99 +19,57 @@ stream_driver-y := \
 	src/stream_release.o \
 	src/stream_read.o \
 	src/stream_write.o \
-	src/stream_poll.o \
-	src/stream_timer_callback.o
+	src/stream_poll.o
 
-# Allow source files to include:
-#
+# Allow:
 #   #include "stream_driver.h"
-#
 ccflags-y += -I$(src)/include
 
-# stream_driver.c is the entry point for stream_driver.ko.
-#
-# We compile it as stream_driver_main.o because stream_driver.o is already
-# used by Kbuild as the combined object for the complete module.
+# Compile stream_driver.c -> stream_driver_main.o
 $(obj)/stream_driver_main.o: $(src)/stream_driver.c $(recordmcount_source) FORCE
 	$(call if_changed_rule,cc_o_c)
 
 else
 
-# ===========================================================================
-# External build
-# ===========================================================================
-
-KDIR ?= /lib/modules/$(shell uname -r)/build
-
+KDIR ?= /path/to/linux
 BUILD_DIR := $(CURDIR)/build
 
 CXX := $(CROSS_COMPILE)g++
+CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic
 
-KBUILD_ARGS := \
-	$(if $(ARCH),ARCH=$(ARCH)) \
-	$(if $(CROSS_COMPILE),CROSS_COMPILE=$(CROSS_COMPILE))
+.PHONY: all modules reader producer clean install
 
-.DEFAULT_GOAL := all
-
-# ===========================================================================
-# Main targets
-# ===========================================================================
-
-all: modules userspace
-
-# ---------------------------------------------------------------------------
-# Kernel modules
-# ---------------------------------------------------------------------------
+all: modules reader producer
 
 modules:
 	mkdir -p $(BUILD_DIR)
 	$(MAKE) -C $(KDIR) \
 		M=$(CURDIR) \
 		MO=$(BUILD_DIR) \
-		$(KBUILD_ARGS) \
+		ARCH=$(ARCH) \
+		CROSS_COMPILE=$(CROSS_COMPILE) \
 		modules
 
-# Alias if you still want to use "make module".
-module: modules
-
-# ---------------------------------------------------------------------------
-# Userspace programs
-# ---------------------------------------------------------------------------
-
-userspace: \
-	$(BUILD_DIR)/stream_reader \
-	$(BUILD_DIR)/stream_producer
-
-# Keep your previous "make test" interface as an alias.
-test: userspace
-
+reader: $(BUILD_DIR)/stream_reader
 $(BUILD_DIR)/stream_reader: stream_reader.cc
 	mkdir -p $(BUILD_DIR)
-	$(CXX) \
-		$(CPPFLAGS) \
-		$(CXXFLAGS) \
-		$< \
-		$(LDFLAGS) \
-		$(LDLIBS) \
-		-o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
+producer: $(BUILD_DIR)/stream_producer
 $(BUILD_DIR)/stream_producer: stream_producer.cc
 	mkdir -p $(BUILD_DIR)
-	$(CXX) \
-		$(CPPFLAGS) \
-		$(CXXFLAGS) \
-		$< \
-		$(LDFLAGS) \
-		$(LDLIBS) \
-		-o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
-# ---------------------------------------------------------------------------
-# Cleanup
-# ---------------------------------------------------------------------------
+install:
+	install -D -m 0755 \
+		$(BUILD_DIR)/stream_producer \
+		$(DESTDIR)/usr/bin/stream_producer
+
+	install -D -m 0644 \
+		$(CURDIR)/systemd/stream_producer.service \
+		$(DESTDIR)/usr/lib/systemd/system/stream_producer.service
 
 clean:
 	rm -rf $(BUILD_DIR)
-
-.PHONY: all modules module userspace test clean
 
 endif

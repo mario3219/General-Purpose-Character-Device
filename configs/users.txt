@@ -1,0 +1,1 @@
+producer -1 producer -1 * - - stream Data producer service

@@ -1,0 +1,1 @@
+KERNEL=="streamdev0", GROUP="stream", MODE="0660"

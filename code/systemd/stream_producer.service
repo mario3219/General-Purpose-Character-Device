@@ -1,0 +1,15 @@
+[Unit]
+Description=Data producer service
+
+[Service]
+Type=exec
+User=producer
+Group=stream
+ExecStart=/usr/bin/stream_producer
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
