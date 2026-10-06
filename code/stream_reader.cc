@@ -46,7 +46,8 @@ int main()
             continue;
         }
         if (pfd.revents & POLLIN) {
-            uint32_t samples[32];
+      
+            int16_t samples[32];
             ssize_t bytes = read(fd, samples, sizeof(samples));
 
             if (bytes < 0) {
@@ -59,7 +60,7 @@ int main()
                 break;
             }
 
-            std::size_t count = bytes / sizeof(uint32_t);
+            std::size_t count = bytes / sizeof(int16_t);
 
             for (std::size_t i = 0; i < count; ++i) {
                 std::cout
