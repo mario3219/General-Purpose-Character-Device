@@ -23,6 +23,8 @@ The device is virtual, so no physical hardware is required. Instead, a data prod
 
 The learning topics include platform device and driver matching, character device registration, file operations, kernel/userspace data transfer, synchronization, wait queues, and resource cleanup. The current implementation uses a userspace producer rather than a kernel timer to simulate incoming hardware data.
 
+The platform driver allocates 4096 bytes of storage for the FIFO queue. It has no knowledge of how many bytes a sample is. If the producer writes 4-byte samples, then the reader has to interpret 4-byte samples as well. For future use, this needs to be adapted depending on the data that is used.
+
 ## Requirements
 
 - A Linux host with Bash, Git, Make, a C/C++ compiler, and the host utilities required to build Buildroot.
